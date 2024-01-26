@@ -1,0 +1,50 @@
+:root {
+  --main-bg-color: #0c0e12;
+  --main-text-color: #e0e9ef;
+}
+
+* {
+  background-color: var(--main-bg-color);
+  color: var(--main-text-color);
+  font-size: clamp(15px, 2.5vw, 50px);
+}
+.container {
+  display: grid;
+  margin: auto;
+  width: min(1500px, 75vw);
+  color: #e0e9ef;
+  padding-bottom: 0;
+}
+.game {
+  position: relative;
+  min-height: max(600px, 70vh);
+  margin-top: 100px;
+  border: 0.5px solid #34373f;
+}
+#tutorial {
+  font-family: "Pixelify Sans", sans-serif;
+  display: flex;
+  margin: auto;
+  margin-top: min(100px, 15vh);
+}
+.center {
+  display: inline-block;
+  margin: auto;
+}
+
+#timer {
+  font-family: "Pixelify Sans", sans-serif;
+  font-size: clamp(44px, 2.5vw, 100px);
+}
+canvas {
+  /* padding: 0; */
+  position: absolute;
+  bottom: 0;
+  min-height: max(600px, 70vh);
+  left: 0;
+  background-color: transparent;
+  /* border: 1px dashed var(--main-text-color); */
+  width: min(1500px, 75vw);
+  height: max-content;
+  overflow: hidden;
+}
