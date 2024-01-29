@@ -1,3 +1,4 @@
+// document.addEventListener("DOMContentLoaded", function () {
 // this class describes the properties of a single particle.
 class Particle {
   // setting the co-ordinates, radius and the
@@ -9,21 +10,20 @@ class Particle {
     this.pos = createVector(random(0, width), random(0, height));
     this.vel = createVector(random(-2, 2), random(-1, 1.5));
     this.acc = createVector(0, 0);
-    this.speed = sqrt(this.vel.x ^ (2 + this.vel.y) ^ 2);
 
-    this.maxforce = (1 / 5) * (this.r ^ 5);
+    this.maxforce = 0.0000000000001;
     this.maxspeed = 1.5;
 
-    this.distanceToBlob = dist(this.pos.x, this.pos.y, width / 2, height / 2);
+    this.distanceToBlob = this.pos.dist(blobMonsterPos);
   }
 
   // creation of a particle.
   show() {
     noStroke();
     fill(this.lucky ? "rgba(245,169,72,1)" : "rgba(200,169,169,0.5)");
-    push();
+    // push();
 
-    if (this.distanceToBlob < blobMonsterRadius) {
+    if (this.distanceToBlob < maxBlobRadius) {
       fill("red");
     }
     circle(this.pos.x, this.pos.y, this.r);
@@ -80,10 +80,16 @@ class Particle {
 
 let particles = [];
 
-let blobMonsterRadius = 25;
-let sizeDifference = 75;
+const minBlobRadius = 25;
+const sizeDifference = 35;
+let currentBlobRadius = minBlobRadius;
+const scareRange = 20;
 
-let maxblobsize = blobMonsterRadius + sizeDifference;
+const growSpeed = 0.1;
+
+const maxBlobRadius = minBlobRadius + sizeDifference;
+
+let blobMonsterPos;
 
 let growing = false;
 let blobMonsterFill = "rgba(255,255,255,0.8)";
@@ -93,6 +99,7 @@ let timer = 60;
 
 function setup() {
   createCanvas(500, 400, document.getElementById("game"));
+  blobMonsterPos = createVector(width / 2, height / 2);
   for (let i = 0; i < width / 5; i++) {
     particles.push(new Particle());
   }
@@ -106,34 +113,45 @@ function draw() {
 
   text(timer, 10, 30);
 
-  let blobMonster = createVector(width / 2, height / 2);
-
-  for (let i = 0; i < particles.length; i++) {
+  for (let i = particles.length - 1; i >= 0; i--) {
+    if (
+      particles[i].distanceToBlob <= currentBlobRadius + particles[i].r &&
+      growing
+    ) {
+      // Remove the particle from the array
+      particles.splice(i, 1);
+      continue;
+    }
     particles[i].show();
     particles[i].update();
-    fleevect = particles[i].flee(blobMonster);
+    fleevect = particles[i].flee(blobMonsterPos);
 
-    if (particles[i].distanceToBlob < blobMonsterRadius - 10 && !growing) {
+    if (particles[i].distanceToBlob - currentBlobRadius < scareRange) {
+      // setTimeout(
+      //   () => {
       particles[i].applyForce(fleevect);
+      //   },
     }
-    if (particles[i].distanceToBlob < blobMonsterRadius - 25 && growing) {
-      particles[i].applyForce(fleevect);
-    }
+    // if (particles[i].distanceToBlob < maxBlobRadius - 25 && growing) {
+    //   particles[i].applyForce(fleevect);
+    // }
     particles[i].boundaries(25);
   }
 
   // draw the blobmonster
   fill(blobMonsterFill);
-  circle(width / 2, height / 2, blobMonsterRadius);
+  circle(width / 2, height / 2, currentBlobRadius * 2);
 
   fill("rgba(255,255,255,0.1)");
-  circle(width / 2, height / 2, maxblobsize);
+  circle(width / 2, height / 2, maxBlobRadius * 2);
   if (growing) {
     // Gradually increase the size of the circle towards the target size
-    blobMonsterRadius = lerp(blobMonsterRadius, maxblobsize, 0.125);
+    currentBlobRadius = lerp(currentBlobRadius, maxBlobRadius, growSpeed);
+    // console.log(currentBlobRadius);
   } else {
     // Gradually decrease the size of the circle towards the initial size
-    blobMonsterRadius = lerp(blobMonsterRadius, 50, 0.125);
+    currentBlobRadius = lerp(currentBlobRadius, minBlobRadius, growSpeed);
+    // console.log(currentBlobRadius);
   }
 }
 
@@ -150,3 +168,4 @@ function keyReleased() {
     blobMonsterFill = "rgba(255,255,255,0.8)";
   }
 }
+// });
