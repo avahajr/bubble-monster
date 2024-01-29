@@ -1,0 +1,28 @@
+:root {
+  --main-bg-color: #0c0e12;
+  --main-text-color: #e0e9ef;
+}
+
+* {
+  /* display: flex;
+  margin: auto; */
+  background-color: var(--main-bg-color);
+  color: var(--main-text-color);
+  font-size: clamp(15px, 2.5vw, 50px);
+}
+
+#score {
+  font-family: "Pixelify Sans", sans-serif;
+  color: var(--main-text-color);
+}
+
+.gamecontainer {
+  display: flex;
+  align-items: center;
+  align-content: center;
+  padding-top: 25vh;
+}
+canvas {
+  display: flex;
+  margin: auto;
+}
