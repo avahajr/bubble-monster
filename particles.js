@@ -4,7 +4,7 @@ class Particle {
   // setting the co-ordinates, radius and the
   // speed of a particle in both the co-ordinates axes.
   constructor() {
-    this.r = random(3, 15); // doubles as mass
+    this.r = random(8, 15); // doubles as mass
     this.lucky = Math.random() < 0.05;
 
     this.pos = createVector(random(0, width), random(0, height));
@@ -23,8 +23,8 @@ class Particle {
     fill(this.lucky ? "rgba(245,169,72,1)" : "rgba(200,169,169,0.5)");
     // push();
 
-    if (this.distanceToBlob < maxBlobRadius) {
-      fill("red");
+    if (this.distanceToBlob < maxBlobRadius && !this.lucky) {
+      fill("rgba(255,0,0,0.7) ");
     }
     circle(this.pos.x, this.pos.y, this.r);
   }
@@ -41,33 +41,33 @@ class Particle {
     // eating logic
   }
   boundaries(offset) {
-    let desired = null;
+    let des = null;
 
     if (this.pos.x < offset) {
-      desired = createVector(this.maxspeed, this.vel.y);
+      des = createVector(this.maxspeed, this.vel.y);
     } else if (this.pos.x > width - offset) {
-      desired = createVector(-this.maxspeed, this.vel.y);
+      des = createVector(-this.maxspeed, this.vel.y);
     }
 
     if (this.pos.y < offset) {
-      desired = createVector(this.vel.x, this.maxspeed);
+      des = createVector(this.vel.x, this.maxspeed);
     } else if (this.pos.y > height - offset) {
-      desired = createVector(this.vel.x, -this.maxspeed);
+      des = createVector(this.vel.x, -this.maxspeed);
     }
 
-    if (desired !== null) {
-      desired.normalize();
-      desired.mult(this.maxspeed);
-      let steer = p5.Vector.sub(desired, this.vel);
+    if (des !== null) {
+      des.normalize();
+      des.mult(this.maxspeed);
+      let steer = p5.Vector.sub(des, this.vel);
       steer.limit(this.maxforce);
       this.applyForce(steer);
     }
   }
   seek(target) {
     // params are vector pos of where you want to seek
-    let desired = p5.Vector.sub(target, this.pos);
-    desired.setMag(this.maxspeed);
-    let steering = p5.Vector.sub(desired, this.vel);
+    let des = p5.Vector.sub(target, this.pos);
+    des.setMag(this.maxspeed);
+    let steering = p5.Vector.sub(des, this.vel);
     return steering;
   }
   flee(target) {
@@ -83,19 +83,27 @@ let particles = [];
 const minBlobRadius = 25;
 const sizeDifference = 35;
 let currentBlobRadius = minBlobRadius;
-const scareRange = 20;
+let scareRange = 20;
 
 const growSpeed = 0.1;
 
-const maxBlobRadius = minBlobRadius + sizeDifference;
+let maxBlobRadius = minBlobRadius + sizeDifference;
 
 let blobMonsterPos;
 
 let growing = false;
 let blobMonsterFill = "rgba(255,255,255,0.8)";
 
-let timer = 60;
-// let purple = "rgba(189,147,249,0.5)";
+let score = 0;
+
+let eatSound;
+let luckyEatSound;
+
+function preload() {
+  soundFormats("mp3");
+  eatSound = loadSound("sounds/blip");
+  luckyEatSound = loadSound("sounds/powerup");
+}
 
 function setup() {
   createCanvas(500, 400, document.getElementById("game"));
@@ -111,15 +119,25 @@ function draw() {
   textFont("Pixelify Sans");
   fill("white");
 
-  text(timer, 10, 30);
+  text(score, 10, 30);
 
   for (let i = particles.length - 1; i >= 0; i--) {
     if (
       particles[i].distanceToBlob <= currentBlobRadius + particles[i].r &&
       growing
     ) {
+      if (particles[i].lucky) {
+        maxBlobRadius += 15;
+        scareRange = maxBlobRadius / 2 - 5;
+        console.log("maxBlobRadius:", maxBlobRadius, "scareRange:", scareRange);
+        luckyEatSound.play();
+      } else {
+        eatSound.play();
+      }
       // Remove the particle from the array
       particles.splice(i, 1);
+      score += 1;
+
       continue;
     }
     particles[i].show();
@@ -127,14 +145,9 @@ function draw() {
     fleevect = particles[i].flee(blobMonsterPos);
 
     if (particles[i].distanceToBlob - currentBlobRadius < scareRange) {
-      // setTimeout(
-      //   () => {
       particles[i].applyForce(fleevect);
-      //   },
     }
-    // if (particles[i].distanceToBlob < maxBlobRadius - 25 && growing) {
-    //   particles[i].applyForce(fleevect);
-    // }
+
     particles[i].boundaries(25);
   }
 
